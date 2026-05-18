@@ -414,7 +414,7 @@ export default function Dashboard() {
                                       setTimeout(() => setStatusMsg(""), 3000);
                                     } catch (err: any) {
                                       console.error(err);
-                                      alert("Gagal mengunggah gambar. Pastikan Anda telah membuat bucket publik bernama 'project-images' di Storage Supabase Anda.");
+                                      alert("Gagal mengunggah gambar: " + (err.message || JSON.stringify(err)));
                                       setStatusMsg("Gagal mengunggah gambar.");
                                     }
                                   }} 
