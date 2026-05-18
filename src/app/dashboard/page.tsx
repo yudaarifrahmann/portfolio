@@ -383,8 +383,43 @@ export default function Dashboard() {
                           <td>
                             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", padding: "0.5rem 0" }}>
                               <input type="text" className="form-input" placeholder="Nama Project" value={project.title} onChange={(e) => updateProject(project.id, "title", e.target.value)} />
-                              <input type="text" className="form-input" placeholder="Tautan Tautan Project" value={project.link} onChange={(e) => updateProject(project.id, "link", e.target.value)} />
-                              <input type="text" className="form-input" placeholder="URL Gambar Project" value={project.image_url} onChange={(e) => updateProject(project.id, "image_url", e.target.value)} />
+                              <input type="text" className="form-input" placeholder="Tautan Project" value={project.link} onChange={(e) => updateProject(project.id, "link", e.target.value)} />
+                              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                                <label className="form-label" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>Pilih Gambar dari Perangkat</label>
+                                <input 
+                                  type="file" 
+                                  accept="image/*" 
+                                  className="form-input" 
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    setStatusMsg("Mengunggah gambar...");
+                                    try {
+                                      const fileExt = file.name.split('.').pop();
+                                      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
+                                      const filePath = `uploads/${fileName}`;
+
+                                      const { error: uploadError } = await supabase.storage
+                                        .from('project-images')
+                                        .upload(filePath, file);
+
+                                      if (uploadError) throw uploadError;
+
+                                      const { data: { publicUrl } } = supabase.storage
+                                        .from('project-images')
+                                        .getPublicUrl(filePath);
+
+                                      updateProject(project.id, "image_url", publicUrl);
+                                      setStatusMsg("Gambar berhasil diunggah!");
+                                      setTimeout(() => setStatusMsg(""), 3000);
+                                    } catch (err: any) {
+                                      console.error(err);
+                                      alert("Gagal mengunggah gambar. Pastikan Anda telah membuat bucket publik bernama 'project-images' di Storage Supabase Anda.");
+                                      setStatusMsg("Gagal mengunggah gambar.");
+                                    }
+                                  }} 
+                                />
+                              </div>
                               <textarea className="form-textarea" placeholder="Deskripsi Ringkas Project" rows={2} value={project.description} onChange={(e) => updateProject(project.id, "description", e.target.value)}></textarea>
                             </div>
                           </td>
