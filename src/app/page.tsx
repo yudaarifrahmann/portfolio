@@ -65,7 +65,7 @@ type Profile = {
 const fallbackProfile: Profile = {
   name: "Yuda Arif Rahman",
   role: "Web Developer",
-  bio: "Web developer yang berfokus pada pembuatan sistem modern berbasis web dan IoT integration. Berpengalaman mengembangkan sistem absensi, dashboard monitoring, dan aplikasi operasional dengan tampilan responsif dan realtime system.",
+  bio: "Web developer yang membangun aplikasi web, dashboard monitoring, dan integrasi IoT untuk kebutuhan operasional. Terbiasa mengerjakan alur data realtime, antarmuka responsif, dan sistem yang mudah digunakan tim.",
   github_url: "https://github.com",
   linkedin_url: "https://linkedin.com",
   whatsapp: "6281234567890",
@@ -75,9 +75,7 @@ const fallbackProfile: Profile = {
 // Roles rotor options
 const ROLES_LIST = [
   "Web Developer",
-  "IoT Integrator",
-  "Dashboard Architect",
-  "Realtime Developer"
+  "IoT Integrator"
 ];
 
 export default function Home() {
@@ -154,7 +152,7 @@ export default function Home() {
     // 5. Rotate words/roles interval
     const interval = setInterval(() => {
       setRoleIdx((prev) => (prev + 1) % ROLES_LIST.length);
-    }, 3000);
+    }, 2200);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
@@ -216,20 +214,15 @@ export default function Home() {
 
       {/* HERO SECTION */}
       <section className="hero">
-        <span className="hero-subtitle reveal d-1">
-          <span style={{ width: 6, height: 6, background: "var(--accent)", borderRadius: "50%", boxShadow: "0 0 8px var(--accent)" }}></span>
-          Available for Projects
-        </span>
         <h1 className="hero-title reveal d-2">
-          Halo, Saya <span className="text-gradient-purple">{profile.name}</span>
-          <br />
-          Seorang{" "}
-          <span className="text-gradient-purple text-rotor">
-            {ROLES_LIST.map((role, idx) => (
-              <span key={role} className="text-rotor-span" style={{ animationDelay: `${idx * 0.1}s`, display: roleIdx === idx ? "block" : "none" }}>
-                {role}
+          Halo, Saya <span className="text-gradient-purple">{profile.name}</span>{" "}
+          <span className="hero-role-line">
+            Seorang{" "}
+            <span className="text-gradient-purple text-rotor">
+              <span key={roleIdx} className="text-rotor-span">
+                {ROLES_LIST[roleIdx]}
               </span>
-            ))}
+            </span>
           </span>
         </h1>
         <p className="hero-desc reveal d-3">
@@ -255,7 +248,7 @@ export default function Home() {
           <div className="about-card glass reveal d-1">
             <h3 style={{ fontSize: "1.5rem", marginBottom: "1rem" }} className="text-gradient-purple">Profil Keahlian</h3>
             <p className="about-text">
-              Fokus penuh pada efisiensi sistem, integrasi perangkat keras (IoT), serta visualisasi metrik dengan latensi ultra rendah. Selalu mengedepankan pengalaman pengguna dan ketahanan arsitektur data.
+              Fokus pada aplikasi yang rapi, cepat dipahami, dan kuat untuk dipakai harian. Saya banyak menangani integrasi perangkat, visualisasi data, serta dashboard yang membantu tim membaca kondisi sistem dengan jelas.
             </p>
           </div>
           <div className="about-card glass reveal d-2">
@@ -348,7 +341,7 @@ export default function Home() {
               <textarea name="message" className="form-textarea" rows={5} required value={form.message} onChange={handleInputChange}></textarea>
             </div>
             <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={submitting}>
-              {submitting ? "Mengirim..." : "Kirim Pesan Sekarang"}
+              {submitting ? "Mengirim..." : "Kirim Pesan"}
             </button>
             {submitStatus && (
               <p style={{ marginTop: "1.25rem", color: "var(--accent)", fontSize: "0.9rem", fontWeight: "600", textAlign: "center" }}>

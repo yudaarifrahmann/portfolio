@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
 // Custom Icons
@@ -48,20 +49,71 @@ const LogoutIcon = () => (
   </svg>
 );
 
+type DashboardProfile = {
+  name: string;
+  role: string;
+  bio: string;
+  github_url: string;
+  linkedin_url: string;
+  whatsapp: string;
+  email: string;
+};
+
+type DashboardProject = {
+  id: string;
+  title: string;
+  description: string;
+  image_url: string;
+  link: string;
+  order: number;
+  isNew?: boolean;
+};
+
+type DashboardMessage = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+};
+
+const getErrorMessage = (err: unknown, fallback: string) => {
+  if (err instanceof Error) return err.message;
+  return fallback;
+};
+
 export default function Dashboard() {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
   const [activeTab, setActiveTab] = useState<"profile" | "projects" | "messages">("profile");
-  const [profile, setProfile] = useState({ name: "", role: "", bio: "", github_url: "", linkedin_url: "", whatsapp: "", email: "" });
-  const [projects, setProjects] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [profile, setProfile] = useState<DashboardProfile>({ name: "", role: "", bio: "", github_url: "", linkedin_url: "", whatsapp: "", email: "" });
+  const [projects, setProjects] = useState<DashboardProject[]>([]);
+  const [messages, setMessages] = useState<DashboardMessage[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
+
+  const fetchDashboardData = useCallback(async () => {
+    setDataLoading(true);
+    try {
+      const { data: profileData } = await supabase.from('profile').select('*').single();
+      if (profileData) setProfile(profileData);
+
+      const { data: projectsData } = await supabase.from('projects').select('*').order('order', { ascending: true });
+      if (projectsData) setProjects(projectsData);
+
+      const { data: messagesData } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
+      if (messagesData) setMessages(messagesData);
+    } catch (err) {
+      console.error("Gagal memuat data dari Supabase.", err);
+    } finally {
+      setDataLoading(false);
+    }
+  }, []);
 
   // Check existing session
   useEffect(() => {
@@ -81,7 +133,7 @@ export default function Dashboard() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [fetchDashboardData]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,32 +142,14 @@ export default function Dashboard() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       setSession(data.session);
-    } catch (err: any) {
-      setLoginError(err.message || "Gagal masuk. Periksa email & password Anda.");
+    } catch (err) {
+      setLoginError(getErrorMessage(err, "Gagal masuk. Periksa email & password Anda."));
     }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
-  };
-
-  const fetchDashboardData = async () => {
-    setDataLoading(true);
-    try {
-      const { data: profileData } = await supabase.from('profile').select('*').single();
-      if (profileData) setProfile(profileData);
-
-      const { data: projectsData } = await supabase.from('projects').select('*').order('order', { ascending: true });
-      if (projectsData) setProjects(projectsData);
-
-      const { data: messagesData } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
-      if (messagesData) setMessages(messagesData);
-    } catch (err) {
-      console.error("Gagal memuat data dari Supabase.", err);
-    } finally {
-      setDataLoading(false);
-    }
   };
 
   // PROFILE ACTIONS
@@ -412,9 +446,9 @@ export default function Dashboard() {
                                       updateProject(project.id, "image_url", publicUrl);
                                       setStatusMsg("Gambar berhasil diunggah!");
                                       setTimeout(() => setStatusMsg(""), 3000);
-                                    } catch (err: any) {
+                                    } catch (err) {
                                       console.error(err);
-                                      alert("Gagal mengunggah gambar: " + (err.message || JSON.stringify(err)));
+                                      alert("Gagal mengunggah gambar: " + getErrorMessage(err, "Silakan coba kembali."));
                                       setStatusMsg("Gagal mengunggah gambar.");
                                     }
                                   }} 
